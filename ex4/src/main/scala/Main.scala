@@ -6,25 +6,25 @@ case class ServerConfig(version: String, host: String, port: Int)
 
 object ServerConfig:
   given ConfigDecoder[ServerConfig] = (
-    ConfigDecoder.field("version").as[String],
-    ConfigDecoder.field("host").as[String],
-    ConfigDecoder.field("port").as[Int],
+    ConfigDecoder.path("version").as[String],
+    ConfigDecoder.path("host").as[String],
+    ConfigDecoder.path("port").as[Int],
   ).parMapN(ServerConfig.apply)
 
 case class ClientConfig(version: String, browser: String)
 
 object ClientConfig:
   given ConfigDecoder[ClientConfig] = (
-    ConfigDecoder.field("version").as[String],
-    ConfigDecoder.field("browser").as[String],
+    ConfigDecoder.path("version").as[String],
+    ConfigDecoder.path("browser").as[String],
   ).parMapN(ClientConfig.apply)
 
 case class SystemConfig(server: ServerConfig, client: ClientConfig)
 
 object SystemConfig:
   given ConfigDecoder[SystemConfig] = (
-    ConfigDecoder.field("server").as[ServerConfig],
-    ConfigDecoder.field("client").as[ClientConfig],
+    ConfigDecoder.path("server").as[ServerConfig],
+    ConfigDecoder.path("client").as[ClientConfig],
   ).parMapN(SystemConfig.apply)
 
 @main def main(): Unit =
