@@ -1,30 +1,29 @@
 package config
 
 import cats.arrow.FunctionK
-import cats.data.Validated
+import cats.data.{EitherNec, NonEmptyChain, Validated}
 import cats.{~>, Applicative, FlatMap, Monad, Parallel}
 import cats.syntax.all.*
 
 /** Type class for decoding instances of `Config` as domain-specific types.
   *
-  * Synopsis:
+  * The following code:
   *
-  *   - ConfigDecoder.identity - a `ConfigDecoder[Config]` that simply returns the whole config;
-  *   - ConfigDecoder.field("foo") - a `ConfigDecoder[Config]` that returns the sub-config at path "foo";
-  *   - ConfigDecoder.field("foo").field("bar") - a `ConfigDecoder[Config]` that returns the sub-config at path "foo.bar";
-  *   - ConfigDecoder.field("foo").as[Bar] - a `ConfigDecoder[String]` that decodes the sub-config at path "foo" as a value of type `Bar`.
-  *     Assumes a `using` parameter of type `ConfigDecoder[Bar]` is in implicit scope.
+  * ```
+  * ConfigDecoder.path("foo").as[Bar]
+  * ```
   *
-  * Composition:
+  * defines a `ConfigDecoder[String]` that decodes path "foo" as a value of type `Bar`. The `as` method takes an implicit parameter of type
+  * `ConfigDecoder[Bar]`.
   *
-  * `ConfigDecoder` is a monad allowing sequential composition of decoders. Semantics are fail-fast - if the first decoder fails, subsequent
-  * decoders are not used and only one error message is returned:
+  * `ConfigDecoder` is a monad, which allows sequential composition of decoders. Semantics are fail-fast - if the first decoder fails,
+  * subsequent decoders are not used and only one error message is returned:
   *
   * ```
   * val cellDecoder: ConfigDecoder[(String, Int)] =
   *   for
-  *     col <- ConfigDecoder.field("col").as[String]
-  *     row <- ConfigDecoder.field("row").as[Int]
+  *     col <- ConfigDecoder.path("col").as[String]
+  *     row <- ConfigDecoder.path("row").as[Int]
   *   yield (col, row)
   * ```
   *
@@ -44,33 +43,11 @@ trait ConfigDecoder[A]:
 
   def decode(config: Config): Result[A]
 
-  def map[B](func: A => B): ConfigDecoder[B] =
-    ConfigDecoder.instance(config => decode(config).map(func))
-
-  def eitherMap[B](func: A => Result[B]): ConfigDecoder[B] =
-    ConfigDecoder.instance(config => decode(config).flatMap(func))
-
-  def flatMap[B](func: A => ConfigDecoder[B]): ConfigDecoder[B] =
-    ConfigDecoder.instance(config => decode(config).flatMap(a => func(a).decode(config)))
-
-  def field(path: String): ConfigDecoder[Config] =
-    ConfigDecoder.instance {
-      case Config.Block(fields) =>
-        fields.get(path).toRight(Vector(ConfigDecoderError.missing.at(path)))
-
-      case Config.Str(value) =>
-        Left(Vector(ConfigDecoderError.invalid("dict")))
-
-      case Config.Num(value) =>
-        Left(Vector(ConfigDecoderError.invalid("dict")))
-    }
-
-  def as[B](using dec: ConfigDecoder[B])(using ev: A =:= Config): ConfigDecoder[B] =
-    ConfigDecoder.instance(config => this.decode(config).map(ev.apply).flatMap(dec.decode))
+  def at(path: String | List[String]): ConfigDecoder[A] =
+    ConfigDecoder.instance(_.get(path).flatMap(this.decode).prefix(path))
 
 object ConfigDecoder:
-  type Errors    = Vector[ConfigDecoderError]
-  type Result[A] = Either[Errors, A]
+  type Result[A] = EitherNec[ConfigDecoderError, A]
 
   def apply[A](using decoder: ConfigDecoder[A]): ConfigDecoder[A] =
     decoder
@@ -86,19 +63,31 @@ object ConfigDecoder:
   val identity: ConfigDecoder[Config] =
     instance(_.pure[Result])
 
-  def field(path: String): ConfigDecoder[Config] =
-    identity.field(path)
+  class PathBuilder(path: List[String]):
+    def as[A](using decoder: ConfigDecoder[A]): ConfigDecoder[A] =
+      decoder.at(path)
+
+  def path(path: String | List[String]) =
+    path match
+      case path: String       => PathBuilder(List(path))
+      case path: List[String] => PathBuilder(path)
+
+  def missingError[A]: Result[A] =
+    NonEmptyChain(ConfigDecoderError.missing).raiseError[Result, A]
+
+  def invalidError[A](expected: String): Result[A] =
+    NonEmptyChain(ConfigDecoderError.invalid(expected)).raiseError[Result, A]
 
   given ConfigDecoder[String] =
     instance {
       case Config.Str(value) => value.pure[Result]
-      case _                 => Vector(ConfigDecoderError.invalid("string")).raiseError
+      case config            => invalidError("string")
     }
 
   given ConfigDecoder[Int] =
     instance {
       case Config.Num(value) => value.pure[Result]
-      case _                 => Vector(ConfigDecoderError.invalid("int")).raiseError
+      case config            => invalidError("int")
     }
 
   given monad: Monad[ConfigDecoder] with
@@ -134,3 +123,9 @@ object ConfigDecoder:
 
     override def sequential: ConfigDecoder ~> ConfigDecoder =
       FunctionK.id
+
+end ConfigDecoder
+
+extension [A](result: ConfigDecoder.Result[A])
+  def prefix(path: String | List[String]): ConfigDecoder.Result[A] =
+    result.left.map(_.map(_.at(path)))
