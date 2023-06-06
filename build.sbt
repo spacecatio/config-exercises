@@ -10,11 +10,12 @@ val sttpClientVersion = "4.0.0-M1"
 val sttpOpenaiVersion = "0.0.6"
 val unindentVersion   = "1.8.0"
 
-lazy val ex1  = project.in(file("ex1")).settings(commonSettings("ex1"))
-lazy val ex2  = project.in(file("ex2")).settings(commonSettings("ex2"))
-lazy val ex3  = project.in(file("ex3")).settings(commonSettings("ex3"))
-lazy val ex4  = project.in(file("ex4")).settings(commonSettings("ex4"))
-lazy val root = project.aggregate(ex1, ex2, ex3, ex4)
+lazy val common = project.in(file("common")).settings(commonSettings("common"))
+lazy val ex1    = project.in(file("ex1")).dependsOn(common).settings(commonSettings("ex1"))
+lazy val ex2    = project.in(file("ex2")).dependsOn(common).settings(commonSettings("ex2"))
+lazy val ex3    = project.in(file("ex3")).dependsOn(common).settings(commonSettings("ex3"))
+lazy val ex4    = project.in(file("ex4")).dependsOn(common).settings(commonSettings("ex4"))
+lazy val root   = project.aggregate(common, ex1, ex2, ex3, ex4)
 
 def commonSettings(projectName: String) =
   Seq(
