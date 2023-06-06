@@ -1,4 +1,4 @@
-# Cats Sandbox
+# Config Decoding Exercises
 
 This repository contains an empty Scala/Cats project
 for use in [Spacecat](https://spacecat.io) training courses.
@@ -18,8 +18,8 @@ Licensed [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0.html).
 2. Clone this repository to a directory on your hard drive:
 
    ```bash
-   git clone https://github.com/spacecatio/cats-sandbox.git
-   cd cats-sandbox
+   git clone https://github.com/spacecatio/config-exercises.git
+   cd config-exercises
    ```
 
 3. Run the `sbt.sh` script (or use your own locally installed SBT):
@@ -28,13 +28,13 @@ Licensed [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0.html).
    ./sbt.sh
    # Lots of output here. The first run will take a while.
    # You'll see an SBT prompt as follows:
-   sbt:sandbox> run
+   sbt:root> run
    ```
 
 4. Type `run` at the SBT prompt to run the sample app:
 
    ```bash
-   sbt:sandbox> run
+   sbt:root> run
    # Lots of output here. The first run will take a while.
    # You should finally see the following output:
    Hello world!
@@ -43,7 +43,7 @@ Licensed [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0.html).
 5. Type `exit` to quit the SBT prompt when you're done:
 
    ```bash
-   sbt:sandbox> exit
+   sbt:root> exit
    ```
 
 ## Editing Using Visual Studio Code
@@ -54,7 +54,7 @@ we recommend you use [Visual Studio Code](https://code.visualstudio.com/) and a 
 Ideally you should have the `code` command [set up in your terminal](https://code.visualstudio.com/docs/editor/command-line#_code-is-not-recognized-as-an-internal-or-external-command), in which case:
 
 ```bash
-cd cats-sandbox
+cd config-exercises
 code .
 ```
 
