@@ -44,7 +44,11 @@ trait ConfigDecoder[A]:
   def decode(config: Config): Result[A]
 
   def at(path: String | List[String]): ConfigDecoder[A] =
-    ConfigDecoder.instance(_.get(path).flatMap(this.decode).prefix(path))
+    ConfigDecoder.instance { config =>
+      config.get(path) match
+        case Some(config) => decode(config).prefix(path)
+        case None         => ???
+    }
 
 object ConfigDecoder:
   type Result[A] = EitherNec[ConfigDecoderError, A]
