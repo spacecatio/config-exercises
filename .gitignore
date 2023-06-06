@@ -1,0 +1,68 @@
+# .gitignore
+
+# Direnv
+.envrc
+
+# Local configuration
+local.conf
+
+# Play
+dist/
+RUNNING_PID
+
+# sbt
+target
+
+# Logs
+*.log
+api/logs/
+
+# Temporary files
+*~
+*.bak
+*.old
+*.tmp
+nohup.out
+tmp/
+
+# vim
+.*.sw[a-z]
+
+# Eclipse
+.cache
+.classpath
+.project
+.settings/
+.target/
+bin/
+
+# Intellij IDEA
+.idea
+
+# Ensime
+.ensime
+.ensime_cache/
+
+# Metals
+.metals
+.bloop
+.bsp
+
+# VSCode
+.vscode
+
+# Mac OS X
+._*
+.DS_Store
+
+# Windows
+Desktop.ini
+Thumbs.db
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Redis Persistence
+*.rdb
+.gitsecret/keys/random_seed
