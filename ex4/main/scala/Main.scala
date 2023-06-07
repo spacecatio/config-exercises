@@ -1,28 +1,47 @@
+import cats.data.{EitherNec, NonEmptyChain}
+import cats.syntax.all.*
 import config.*
 import unindent.*
 
 case class User(email: String, password: String)
 case class UserConfig(users: List[User])
 
-def decodeAsUserConfig(config: Config): UserConfig =
+def decodeAsUserConfig(config: Config): Result[UserConfig] =
   ???
 
 @main def main(): Unit =
   val config: Config =
-    ConfigParser.unsafeParse(
-      i"""
-      users:
-        count = 3
-        user1:
-          email    = "alice@example.com"
-          password = "password"
-        user2:
-          email    = "bob@example.com"
-          password = "supersecret"
-        user3:
-          email    = "charlie@example.com"
-          password = "opensesame"
-      """
+    Config.block(
+      "count" -> Config.leaf(3),
+      "user1" -> Config.block(
+        "email" -> Config.leaf("alice@example.com"),
+        "password" -> Config.leaf("password"),
+      ),
+      "user2" -> Config.block(
+        "email" -> Config.leaf("bob@example.com"),
+        "password" -> Config.leaf("supersecret"),
+      ),
+      "user3" -> Config.block(
+        "email" -> Config.leaf("charlie@example.com"),
+        "password" -> Config.leaf("opensesame"),
+      ),
     )
 
-  println(decodeAsSystemConfig(config))
+  println(decodeAsUserConfig(config))
+
+// TODO: Debug the parser so this parses:
+// ConfigParser.unsafeParse(
+//   i"""
+//   users:
+//     count = 3
+//     user1:
+//       email    = "alice@example.com"
+//       password = "password"
+//     user2:
+//       email    = "bob@example.com"
+//       password = "supersecret"
+//     user3:
+//       email    = "charlie@example.com"
+//       password = "opensesame"
+//   """
+// )
