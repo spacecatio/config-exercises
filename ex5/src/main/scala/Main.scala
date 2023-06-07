@@ -1,10 +1,9 @@
 import config.*
 import unindent.*
 
-case class ServerConfig(version: String, host: String, port: Int)
-
-case class ClientConfig(version: String, browser: String)
 case class SystemConfig(server: ServerConfig, client: ClientConfig)
+case class ServerConfig(version: String, host: String, port: Int)
+case class ClientConfig(version: String, browser: String)
 
 object SystemConfig:
   given ConfigDecoder[SystemConfig] =

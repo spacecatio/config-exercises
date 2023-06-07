@@ -15,7 +15,8 @@ lazy val ex1    = project.in(file("ex1")).dependsOn(common).settings(commonSetti
 lazy val ex2    = project.in(file("ex2")).dependsOn(common).settings(commonSettings("ex2"))
 lazy val ex3    = project.in(file("ex3")).dependsOn(common).settings(commonSettings("ex3"))
 lazy val ex4    = project.in(file("ex4")).dependsOn(common).settings(commonSettings("ex4"))
-lazy val root   = project.aggregate(common, ex1, ex2, ex3, ex4)
+lazy val ex5    = project.in(file("ex5")).dependsOn(common).settings(commonSettings("ex5"))
+lazy val config = project.in(file(".")).aggregate(common, ex1, ex2, ex3, ex4)
 
 def commonSettings(projectName: String) =
   Seq(
